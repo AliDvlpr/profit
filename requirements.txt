@@ -1,0 +1,11 @@
+Django
+djangorestframework
+djangorestframework_simplejwt
+django-cors-headers
+django-debug-toolbar
+django-filter
+djoser
+drf-nested-routers
+psycopg2-binary
+Pillow
+whitenoise
