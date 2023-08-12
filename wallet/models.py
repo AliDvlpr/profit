@@ -16,3 +16,28 @@ class Level(models.Model):
     profit_rate = models.DecimalField(max_digits=9, decimal_places=6, default=0)
     min_refferral = models.IntegerField(default=0)
     min_deposit = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+
+class Transaction(models.Model):
+    ACTION_DEPOSIT = 'D'
+    ACTION_WITHDRAW = 'W'
+    ACTION_PROFIT = 'P'
+    ACTION_CHOICES = [
+        (ACTION_DEPOSIT, 'Deposit'),
+        (ACTION_WITHDRAW, 'Withdraw'),
+        (ACTION_PROFIT, 'Profit')
+    ]
+    action = models.CharField(
+        max_length=1, choices=ACTION_CHOICES, default=ACTION_DEPOSIT)
+    amount = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+    STATUS_PENDING = 'P'
+    STATUS_CONFIRMED = 'C'
+    STATUS_REJECTED = 'R'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_CONFIRMED, 'Confirmed'),
+        (STATUS_REJECTED, 'Rejected')
+    ]
+    status = models.CharField(
+        max_length=1, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    transacrion_id = models.CharField(max_length=255, null=True, blank=True)
+    wallet_address = models.CharField(max_length=255, null=True, blank=True)
