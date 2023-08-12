@@ -9,14 +9,14 @@ from .serilaizers import *
 
 # Create your views here.
 class AssetViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
-    queryset =Asset.objects.all()
+    queryset = Asset.objects.all()
     serializer_class = AssetSerializer
     
     @action(detail=False, methods=['GET'])
     def me(self, request):
-        (asset, created) = Asset.objects.get_or_create(user=request.user)
+        asset, created = Asset.objects.get_or_create(user=request.user)  # Use square brackets
         if request.method == 'GET':
-            serializer = AssetSerializer(asset)  # Make sure you're passing an instance, not a string
+            serializer = AssetSerializer(asset)
             return Response(serializer.data)
         
 class LevelViewSet(ModelViewSet):
@@ -30,7 +30,6 @@ class LevelViewSet(ModelViewSet):
     
 class TransactionViewSet(ModelViewSet):
     queryset = Transaction.objects.all()
-    serializer_class = TransactionSerializer
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update']:
@@ -38,6 +37,13 @@ class TransactionViewSet(ModelViewSet):
         else:
             permission_classes = [IsUserOrReadOnly]
         return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateTransactionSerializer
+        return TransactionSerializer
     
     def perform_create(self, serializer):
-        serializer.save(status=Transaction.STATUS_PENDING)
+        user = self.request.user
+        asset = Asset.objects.get(user=user)
+        serializer.save(asset=asset)
