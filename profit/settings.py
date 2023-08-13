@@ -91,6 +91,7 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'core.User'
 
 DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': "reset_password/{uid}/{token}",
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
         'current_user': 'core.serializers.UserSerializer',
