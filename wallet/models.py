@@ -3,7 +3,7 @@ from core.models import CustomUser
 
 # Create your models here.
 class Asset(models.Model):
-    amount = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+    amount = models.DecimalField(max_digits=12, decimal_places=6, default=0)
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     level = models.ForeignKey('Level', on_delete=models.SET_NULL, null=True, blank=True)
     confirmed_at = models.DateTimeField(null=True)
@@ -13,9 +13,9 @@ class Asset(models.Model):
     
 class Level(models.Model):
     name = models.CharField("Level Name", max_length=128)
-    profit_rate = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+    profit_rate = models.DecimalField(max_digits=12, decimal_places=6, default=0)
     min_refferral = models.IntegerField(default=0)
-    min_deposit = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+    min_deposit = models.DecimalField(max_digits=12, decimal_places=6, default=0)
 
 class Transaction(models.Model):
     ACTION_DEPOSIT = 'D'
@@ -28,7 +28,7 @@ class Transaction(models.Model):
     ]
     action = models.CharField(
         max_length=1, choices=ACTION_CHOICES, default=ACTION_DEPOSIT)
-    amount = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+    amount = models.DecimalField(max_digits=12, decimal_places=6, default=0)
     STATUS_PENDING = 'P'
     STATUS_CONFIRMED = 'C'
     STATUS_REJECTED = 'R'
