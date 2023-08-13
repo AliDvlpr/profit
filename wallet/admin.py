@@ -14,10 +14,7 @@ class LevelAdmin(admin.ModelAdmin):
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ['Asset', 'action', 'amount', 'status']
-    list_editable = ['status']
-    search_fields = ['Asset']
-    list_filter = ['action','status']
+    # ... other attributes ...
 
     def save_model(self, request, obj, form, change):
         original_obj = self.model.objects.get(pk=obj.pk)
@@ -25,12 +22,12 @@ class TransactionAdmin(admin.ModelAdmin):
         if obj.status == Transaction.STATUS_CONFIRMED and obj.status != original_obj.status:
             if obj.action == Transaction.ACTION_DEPOSIT:
                 # Add the amount to the asset
-                obj.Asset.amount += obj.amount
+                obj.asset.amount += obj.amount
             elif obj.action == Transaction.ACTION_WITHDRAW:
                 # Subtract the amount from the asset
-                obj.Asset.amount -= obj.amount
+                obj.asset.amount -= obj.amount
 
             # Save the updated asset
-            obj.Asset.save()
+            obj.asset.save()
 
         super().save_model(request, obj, form, change)

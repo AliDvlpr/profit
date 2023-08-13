@@ -41,7 +41,7 @@ class Transaction(models.Model):
         max_length=1, choices=STATUS_CHOICES, default=STATUS_PENDING)
     transacrion_id = models.CharField(max_length=255, null=True, blank=True)
     wallet_address = models.CharField(max_length=255, null=True, blank=True)
-    Asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="transactions")
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="transactions")
 
     def __str__(self):
-        return f"Transactions of {self.Asset.user.email}"
+        return f"Transactions of {self.asset.user.email}"
