@@ -12,23 +12,22 @@ class TransactionInline(admin.TabularInline):
 
 class AssetInline(admin.StackedInline):
     model = Asset
-    fields = ('amount', 'level', 'confirmed_at', 'open_asset')
-    readonly_fields = ('amount', 'level', 'open_asset')
-    inlines = (TransactionInline)
+    fields = ('amount', 'level', 'confirmed_at', 'asset')
+    readonly_fields = ('amount', 'level', 'asset')
     extra = 0
 
-    def open_asset(self, instance):
+    def asset(self, instance):
         if instance.pk:
             change_url = reverse('admin:wallet_asset_change', args=[instance.pk])
             return format_html('<a href="{}">Open Asset</a>', change_url)
         return ''
     
-    open_asset.short_description = 'Open Asset'
+    asset.short_description = 'Asset'
 
 @admin.register(CustomUser)
 class UserAdmin(admin.ModelAdmin):
     list_display = ['email', 'referrer', 'asset_amount']
-    inlines = [AssetInline]
+    inlines = [AssetInline, TransactionInline]
 
     def asset_amount(self, obj):
         return obj.asset.amount if obj.asset else None

@@ -46,4 +46,4 @@ class TransactionViewSet(ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         asset = Asset.objects.get(user=user)
-        serializer.save(asset=asset)
+        serializer.save(asset=asset, user=user)

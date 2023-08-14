@@ -4,7 +4,7 @@ from core.models import CustomUser
 # Create your models here.
 class Asset(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=6, default=0)
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="asset")
     level = models.ForeignKey('Level', on_delete=models.SET_NULL, null=True, blank=True)
     confirmed_at = models.DateTimeField(null=True)
 
@@ -42,6 +42,7 @@ class Transaction(models.Model):
     transacrion_id = models.CharField(max_length=255, null=True, blank=True)
     wallet_address = models.CharField(max_length=255, null=True, blank=True)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="transactions")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="transactions")
 
     def __str__(self):
         return f"Transactions of {self.asset.user.email}"
