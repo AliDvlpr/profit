@@ -17,6 +17,9 @@ class Level(models.Model):
     min_refferral = models.IntegerField(default=0)
     min_deposit = models.DecimalField(max_digits=12, decimal_places=6, default=0)
 
+    def __str__(self):
+        return self.name
+
 class Transaction(models.Model):
     ACTION_DEPOSIT = 'D'
     ACTION_WITHDRAW = 'W'

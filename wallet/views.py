@@ -2,7 +2,7 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, UpdateModelMixin, ListModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .permissions import *
 from .models import *
 from .serilaizers import *
@@ -10,10 +10,14 @@ from .serilaizers import *
 # Create your views here.
 class AssetViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = Asset.objects.all()
-    serializer_class = AssetSerializer
+    permission_classes = [IsAuthenticated, ReadOnly]
     
-    @action(detail=False, methods=['GET'])
-    def me(self, request):
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateAssetSerializer
+        return AssetSerializer
+    
+    def get(self, request):
         asset, created = Asset.objects.get_or_create(user=request.user)  # Use square brackets
         if request.method == 'GET':
             serializer = AssetSerializer(asset)

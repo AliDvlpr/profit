@@ -26,6 +26,12 @@ class AssetInline(admin.StackedInline):
 
 @admin.register(CustomUser)
 class UserAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (None, {'fields': ('email', 'password', 'is_active')}),
+        ('Personal info', {'fields': ('username', 'first_name', 'last_name')}),
+        ('Make this user an admin', {'fields': ('is_staff',)})
+    )
+
     list_display = ['email', 'referrer', 'asset_amount']
     inlines = [AssetInline, TransactionInline]
 
