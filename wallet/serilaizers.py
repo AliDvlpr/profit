@@ -12,10 +12,10 @@ class AssetSerializer(serializers.ModelSerializer):
         model = Asset
         fields = '__all__'
 
-class CreateAssetSerializer(serializers.ModelSerializer):
+class UpdateAssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
-        exclude = ['user']
+        fields = ["level"]
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
