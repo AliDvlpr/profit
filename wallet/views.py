@@ -39,7 +39,7 @@ class TransactionViewSet(ModelViewSet):
         if self.action in ['update', 'partial_update']:
             permission_classes = [IsAdminOrReadOnly]
         else:
-            permission_classes = [IsUserOrReadOnly]
+            permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
