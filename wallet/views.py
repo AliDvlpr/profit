@@ -13,8 +13,8 @@ class AssetViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gener
     permission_classes = [IsAuthenticated, ReadOnly]
     
     def get_serializer_class(self):
-        if self.action == 'create':
-            return CreateAssetSerializer
+        if self.action == 'partial_update':
+            return UpdateAssetSerializer
         return AssetSerializer
     
     def get(self, request):

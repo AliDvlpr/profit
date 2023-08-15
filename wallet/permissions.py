@@ -20,4 +20,4 @@ class IsUserOrReadOnly(permissions.BasePermission):
     
 class ReadOnly(BasePermission):
     def has_permission(self, request, view):
-        return request.method in ('GET',)
+        return request.method in ('GET', 'PATCH',)
