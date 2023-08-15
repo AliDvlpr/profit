@@ -47,6 +47,11 @@ class TransactionViewSet(ModelViewSet):
             return CreateTransactionSerializer
         return TransactionSerializer
     
+    def get_queryset(self):
+        user = self.request.user
+
+        return Transaction.objects.filter(user=user)
+    
     def perform_create(self, serializer):
         user = self.request.user
         asset = Asset.objects.get(user=user)
