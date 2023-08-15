@@ -90,12 +90,18 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'core.User'
 
+AUTHENTICATION_ERROR_MESSAGES = {
+    'email_not_found': 'This email address is not registered.',
+    'invalid_password': 'Your email and password combination is incorrect.',
+}
+
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': "reset_password/{uid}/{token}",
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
-        'current_user': 'core.serializers.UserSerializer',
-    }
+        'user': 'core.serializers.UserSerializer',
+    },
+    'AUTHENTICATION_ERROR_MESSAGES': AUTHENTICATION_ERROR_MESSAGES,
 }
 
 WSGI_APPLICATION = 'profit.wsgi.application'
@@ -157,3 +163,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]

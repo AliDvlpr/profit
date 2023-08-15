@@ -27,7 +27,7 @@ class AssetInline(admin.StackedInline):
 @admin.register(CustomUser)
 class UserAdmin(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('email', 'password', 'is_active')}),
+        (None, {'fields': ('email', 'password', 'is_active', 'credit')}),
         ('Personal info', {'fields': ('username', 'first_name', 'last_name')}),
         ('Make this user an admin', {'fields': ('is_staff',)})
     )
