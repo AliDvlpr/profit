@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import *
-from .services import process_confirmed_transaction
+from .services import *
 
 class TransactionInline(admin.TabularInline):
     model = Transaction
@@ -18,7 +18,7 @@ class AssetAdmin(admin.ModelAdmin):
 
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
-    list_display = ['name', 'profit_rate', 'min_refferral', 'min_deposit']
+    list_display = ['name', 'profit_rate', 'min_referral', 'min_deposit']
     search_fields = ['name']
 
 @admin.register(Transaction)
@@ -31,6 +31,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
         if obj.status == Transaction.STATUS_CONFIRMED and obj.status != original_obj.status:
             process_confirmed_transaction(obj)
+            update_asset_level(obj.asset)
 
             super().save_model(request, obj, form, change)
 

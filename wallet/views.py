@@ -66,3 +66,8 @@ class DashboardViewSet(ListModelMixin, GenericViewSet):
     def get_queryset(self):
         user = self.request.user
         return CustomUser.objects.filter(pk=user.pk)
+    
+class SettingViewSet(ListModelMixin, GenericViewSet):
+    queryset = Setting.objects.all()
+    serializer_class = SettingSerializer
+    

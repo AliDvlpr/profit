@@ -39,11 +39,12 @@ class AssetInline(admin.StackedInline):
 class UserAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password', 'is_active', 'credit')}),
+        ('referral info', {'fields':('referral_token','referrer')}),
         ('Personal info', {'fields': ('username', 'first_name', 'last_name')}),
         ('Make this user an admin', {'fields': ('is_staff',)})
     )
 
-    list_display = ['email', 'referrer', 'asset_amount']
+    list_display = ['email', 'referrer', 'asset_amount', 'credit']
     inlines = [AssetInline, TransactionInline]
 
     def asset_amount(self, obj):

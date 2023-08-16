@@ -40,8 +40,8 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     credit = models.DecimalField(max_digits=12, decimal_places=6, default=0)
-    referral_token = models.CharField(max_length=6, unique=True, blank=True)
-    referrer = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals')
+    referral_token = models.CharField(max_length=6,null=True, blank=True)
+    referrer = models.CharField(max_length=6, null=True, blank=True)
 
     objects = CustomUserManager() 
 
