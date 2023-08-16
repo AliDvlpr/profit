@@ -24,8 +24,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
 class UserSerializer(BaseUserSerializer):
     asset = AssetSerializer(read_only=True)
     class Meta(BaseUserSerializer.Meta):
-        fields = ['id', 'email', 'referrer', 'credit', 'asset']
-        read_only_fields = fields
+        fields = '__all__'
 
 class UserDashboardSerializer(BaseUserSerializer):
     user_email = serializers.CharField(source='email')  # Access email directly from CustomUser model

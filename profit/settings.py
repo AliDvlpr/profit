@@ -99,7 +99,7 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': "reset_password/{uid}/{token}",
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
-        'user': 'core.serializers.UserSerializer',
+        'user': 'djoser.serializers.UserSerializer',
     },
     'AUTHENTICATION_ERROR_MESSAGES': AUTHENTICATION_ERROR_MESSAGES,
 }

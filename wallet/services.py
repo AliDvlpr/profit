@@ -25,6 +25,8 @@ def process_confirmed_transaction(transaction):
             action=Transaction.ACTION_PROFIT,
             amount=calculated_profit,
             status=Transaction.STATUS_CONFIRMED,
+            created_at= timezone.now(),
+            updated_at= timezone.now(),
             asset=asset,
             user=user
         )
@@ -52,6 +54,8 @@ def process_confirmed_transaction(transaction):
                 action=Transaction.ACTION_PROFIT,
                 amount=calculated_profit,
                 status=Transaction.STATUS_CONFIRMED,
+                created_at= timezone.now(),
+                updated_at= timezone.now(),
                 asset=asset,
                 user=user
             )

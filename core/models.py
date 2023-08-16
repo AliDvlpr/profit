@@ -1,3 +1,4 @@
+import random
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.models import BaseUserManager
@@ -39,6 +40,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     credit = models.DecimalField(max_digits=12, decimal_places=6, default=0)
+    referral_token = models.CharField(max_length=6, unique=True, blank=True)
     referrer = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals')
 
     objects = CustomUserManager() 
@@ -48,3 +50,16 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+    def generate_unique_referral_token(self):
+        while True:
+            return ''.join(random.choices('0123456789', k=6))
+    
+    def save(self, *args, **kwargs):
+        if not self.referral_token and not self.id:
+            while True:
+                referral_token = self.generate_unique_referral_token()
+                if not CustomUser.objects.filter(referral_token=referral_token).exists():
+                    self.referral_token = referral_token
+                    break
+        super().save(*args, **kwargs)
