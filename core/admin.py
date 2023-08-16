@@ -3,26 +3,37 @@ from django.utils.html import format_html
 from django.urls import reverse
 from .models import CustomUser
 from wallet.models import *
+from wallet.services import process_confirmed_transaction
 
 class TransactionInline(admin.TabularInline):
     model = Transaction
     extra = 0
-    fields = ['action', 'amount', 'status']
-    readonly_fields = ('action','amount')
+    fields = ['action', 'amount', 'status', 'updated_at', 'created_at', 'transaction']
+    readonly_fields = ('action','amount', 'status', 'transaction', 'updated_at', 'created_at')
+
+    def transaction(self, instance):
+        if instance.pk:
+            change_url = reverse('admin:wallet_transaction_change', args=[instance.pk])
+            return format_html('<a href="{}">Details</a>', change_url)
+        return ''
+    
+    transaction.short_description = 'transaction'
+
+    def save_model(self, request, obj, form, change):
+        original_obj = self.model.objects.get(pk=obj.pk)
+
+        if obj.status == Transaction.STATUS_CONFIRMED and obj.status != original_obj.status:
+            process_confirmed_transaction(obj)
+
+            super().save_model(request, obj, form, change)
+
+        super().save_model(request, obj, form, change)
 
 class AssetInline(admin.StackedInline):
     model = Asset
-    fields = ('amount', 'level', 'confirmed_at', 'asset')
-    readonly_fields = ('amount', 'level', 'asset')
+    fields = ('amount', 'level', 'confirmed_at')
+    readonly_fields = ('amount', 'level')
     extra = 0
-
-    def asset(self, instance):
-        if instance.pk:
-            change_url = reverse('admin:wallet_asset_change', args=[instance.pk])
-            return format_html('<a href="{}">Open Asset</a>', change_url)
-        return ''
-    
-    asset.short_description = 'Asset'
 
 @admin.register(CustomUser)
 class UserAdmin(admin.ModelAdmin):

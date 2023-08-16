@@ -42,10 +42,12 @@ class Transaction(models.Model):
     ]
     status = models.CharField(
         max_length=1, choices=STATUS_CHOICES, default=STATUS_PENDING)
-    transacrion_id = models.CharField(max_length=255, null=True, blank=True)
+    transaction_id = models.CharField(max_length=255, null=True, blank=True)
     wallet_address = models.CharField(max_length=255, null=True, blank=True)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="transactions")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="transactions")
+    created_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"Transactions of {self.asset.user.email}"

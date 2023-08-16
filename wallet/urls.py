@@ -8,5 +8,6 @@ router = routers.DefaultRouter()
 router.register('asset', views.AssetViewSet, basename="asset")
 router.register('level', views.LevelViewSet, basename='level')
 router.register('transaction',views.TransactionViewSet, basename='transaction')
+router.register('dashboard', views.DashboardViewSet, basename='dashboard')
 
 urlpatterns = router.urls

@@ -25,4 +25,4 @@ class TransactionSerializer(serializers.ModelSerializer):
 class CreateTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        exclude = ['status', 'asset', 'user']
+        exclude = ['status', 'asset', 'user', 'created_at', 'updated_at']

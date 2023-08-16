@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .permissions import *
 from .models import *
 from .serilaizers import *
+from core.models import *
+from core.serializers import *
 
 # Create your views here.
 class AssetViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
@@ -55,4 +57,12 @@ class TransactionViewSet(ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         asset = Asset.objects.get(user=user)
-        serializer.save(asset=asset, user=user)
+        serializer.save(asset=asset, user=user, created_at=timezone.now())
+
+class DashboardViewSet(ListModelMixin, GenericViewSet):
+    permission_classes = [IsAuthenticated] 
+    serializer_class = UserDashboardSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return CustomUser.objects.filter(pk=user.pk)

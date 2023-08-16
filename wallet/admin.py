@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import *
+from .services import process_confirmed_transaction
 
 class TransactionInline(admin.TabularInline):
     model = Transaction
@@ -22,21 +23,15 @@ class LevelAdmin(admin.ModelAdmin):
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ['asset', 'action', 'amount', 'status']
+    list_display = ['asset', 'action', 'amount', 'status', 'updated_at', 'created_at']
     list_editable = ['status']
 
     def save_model(self, request, obj, form, change):
         original_obj = self.model.objects.get(pk=obj.pk)
 
         if obj.status == Transaction.STATUS_CONFIRMED and obj.status != original_obj.status:
-            if obj.action == Transaction.ACTION_DEPOSIT:
-                # Add the amount to the asset
-                obj.asset.amount += obj.amount
-            elif obj.action == Transaction.ACTION_WITHDRAW:
-                # Subtract the amount from the asset
-                obj.asset.amount -= obj.amount
+            process_confirmed_transaction(obj)
 
-            # Save the updated asset
-            obj.asset.save()
+            super().save_model(request, obj, form, change)
 
         super().save_model(request, obj, form, change)

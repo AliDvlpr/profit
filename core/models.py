@@ -38,7 +38,7 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
-    credit = models.IntegerField(default=0)
+    credit = models.DecimalField(max_digits=12, decimal_places=6, default=0)
     referrer = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals')
 
     objects = CustomUserManager() 
