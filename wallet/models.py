@@ -51,6 +51,9 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"Transactions of {self.asset.user.email}"
+    
+    class Meta:
+        ordering = ['-created_at']
 
 class Setting(models.Model):
     wallet_address = models.CharField(max_length=255)
