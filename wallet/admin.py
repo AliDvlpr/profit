@@ -33,6 +33,11 @@ class TransactionAdmin(admin.ModelAdmin):
             process_confirmed_transaction(obj)
             update_asset_level(obj.asset)
 
-            super().save_model(request, obj, form, change)
+        obj.updated_at = timezone.now()
 
         super().save_model(request, obj, form, change)
+
+
+@admin.register(Setting)
+class SettingAdmin(admin.ModelAdmin):
+    list_display = ['wallet_address']

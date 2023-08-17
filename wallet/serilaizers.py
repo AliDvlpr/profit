@@ -18,6 +18,8 @@ class UpdateAssetSerializer(serializers.ModelSerializer):
         fields = ["level"]
 
 class TransactionSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    updated_at = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
     class Meta:
         model = Transaction
         fields = '__all__'

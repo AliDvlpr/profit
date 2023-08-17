@@ -26,21 +26,34 @@ class UserSerializer(BaseUserSerializer):
 class UserDashboardSerializer(BaseUserSerializer):
     user_email = serializers.CharField(source='email')  # Access email directly from CustomUser model
     amount = serializers.DecimalField(source='asset.amount', max_digits=12, decimal_places=6)
-    level_name = serializers.CharField(source='asset.level.name')
-    profit_rate = serializers.DecimalField(source='asset.level.profit_rate', max_digits=12, decimal_places=6)
-    calculated_profit = serializers.SerializerMethodField()
+    level_name = serializers.CharField(source='asset.level.name', allow_null=True)
+    profit_rate = serializers.DecimalField(source='asset.level.profit_rate', max_digits=12, decimal_places=6, allow_null=True)
+    calculated_profit = serializers.SerializerMethodField(allow_null=True)
     user_credit = serializers.IntegerField(source='credit')
     referral_token = serializers.CharField()
     referred_users_count = serializers.SerializerMethodField()  
+    referred__active_users_count = serializers.SerializerMethodField()
 
     def get_referred_users_count(self, instance):
         referred_users_count = CustomUser.objects.filter(referrer=instance.referral_token).count()
+        return referred_users_count
+    
+    def get_referred__active_users_count(self, instance):
+        referred_users = CustomUser.objects.filter(referrer=instance.referral_token)
+        filtered_referred_users = referred_users.filter(
+            asset__confirmed_at__isnull=False,
+            asset__level__isnull=False
+        )
+        referred_users_count = filtered_referred_users.count()
         return referred_users_count
 
     def get_calculated_profit(self, instance):
         asset = instance.asset
         confirmed_at = asset.confirmed_at
         now = timezone.now()
+
+        if confirmed_at is None:
+            return 0
 
         time_difference = now - confirmed_at
         time_difference_in_seconds = time_difference.days
@@ -50,4 +63,4 @@ class UserDashboardSerializer(BaseUserSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['user_email', 'amount', 'level_name','profit_rate', 'calculated_profit', 'user_credit', 'referral_token', 'referred_users_count']
+        fields = ['user_email', 'amount', 'level_name','profit_rate', 'calculated_profit', 'user_credit', 'referral_token', 'referred_users_count', 'referred__active_users_count']
