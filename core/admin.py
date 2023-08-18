@@ -4,6 +4,7 @@ from django.urls import reverse
 from .models import CustomUser
 from wallet.models import *
 from wallet.services import process_confirmed_transaction
+from datetime import datetime, timedelta
 
 class TransactionInline(admin.TabularInline):
     model = Transaction
@@ -44,10 +45,24 @@ class UserAdmin(admin.ModelAdmin):
         ('Make this user an admin', {'fields': ('is_staff',)})
     )
 
-    list_display = ['email', 'referrer', 'asset_amount', 'credit']
+    list_display = ['email', 'referrer', 'asset_amount', 'credit', 'confirmed_at', 'days_since_confirmation']
     inlines = [AssetInline, TransactionInline]
 
     def asset_amount(self, obj):
         return obj.asset.amount if obj.asset else None
   
     asset_amount.short_description = 'Asset Amount'
+
+    def confirmed_at(self, obj):
+        return obj.asset.confirmed_at if obj.asset else None
+
+    confirmed_at.short_description = 'Confirmed At'
+
+    def days_since_confirmation(self, obj):
+        confirmed_at = obj.asset.confirmed_at if obj.asset else None
+        if confirmed_at:
+            days_difference = (datetime.now().date() - confirmed_at.date()).days
+            return days_difference
+        return None
+
+    days_since_confirmation.short_description = 'Days Since Confirmation'
