@@ -7,11 +7,20 @@ from django.utils import timezone
 from decimal import Decimal
 
 class UserCreateSerializer(BaseUserCreateSerializer):
+    referral_token = serializers.CharField(write_only=True) 
     class Meta(BaseUserCreateSerializer.Meta):
-        fields = ['id', 'email', 'password', 'referrer']
+        fields = ['id', 'email', 'password', 'referral_token']
 
     def create(self, validated_data):
-        referrer = validated_data.pop('referrer', None)  # Get the referrer value from validated_data
+        referral_token = validated_data.pop('referral_token', None)
+        referrer = None
+
+        if referral_token:
+            try:
+                referrer = CustomUser.objects.get(referral_token=referral_token)
+            except CustomUser.DoesNotExist:
+                pass
+
         user = CustomUser.objects.create_user(**validated_data, referrer=referrer)
 
         Asset.objects.create(user=user)
@@ -35,11 +44,11 @@ class UserDashboardSerializer(BaseUserSerializer):
     referred__active_users_count = serializers.SerializerMethodField()
 
     def get_referred_users_count(self, instance):
-        referred_users_count = CustomUser.objects.filter(referrer=instance.referral_token).count()
+        referred_users_count = CustomUser.objects.filter(referrer=instance.id).count()
         return referred_users_count
     
     def get_referred__active_users_count(self, instance):
-        referred_users = CustomUser.objects.filter(referrer=instance.referral_token)
+        referred_users = CustomUser.objects.filter(referrer=instance.id)
         filtered_referred_users = referred_users.filter(
             asset__confirmed_at__isnull=False,
             asset__level__isnull=False
