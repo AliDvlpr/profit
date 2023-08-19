@@ -44,7 +44,11 @@ def process_confirmed_transaction(transaction):
 
     elif transaction.action == Transaction.ACTION_WITHDRAW:
         asset = transaction.asset
-        confirmed_at = asset.confirmed_at
+        
+        if asset.confirmed_at is None:
+            asset.confirmed_at = timezone.now()
+            asset.save()
+
         now = timezone.now()
         time_difference = now - confirmed_at
 
