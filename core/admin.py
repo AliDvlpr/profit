@@ -6,11 +6,44 @@ from wallet.models import *
 from wallet.services import process_confirmed_transaction
 from datetime import datetime, timedelta
 
+class ReferredUsersInline(admin.TabularInline):
+    model = CustomUser
+    fk_name = 'referrer'
+    fields = ('email', 'asset_amount', 'credit', 'confirmed_at', 'days_since_confirmation')
+    readonly_fields = ('email', 'asset_amount','credit', 'confirmed_at', 'days_since_confirmation')
+    extra = 0
+    verbose_name = 'Referral'
+    verbose_name_plural = 'Referrals'
+    can_delete = False
+
+    def email(self, instance):
+        return instance.email
+
+    def asset_amount(self, instance):
+        return instance.asset.amount if instance.asset else None
+
+    asset_amount.short_description = 'Asset Amount'
+
+    def confirmed_at(self, instance):
+        return instance.asset.confirmed_at if instance.asset else None
+
+    confirmed_at.short_description = 'Confirmed At'
+
+    def days_since_confirmation(self, instance):
+        confirmed_at = instance.asset.confirmed_at if instance.asset else None
+        if confirmed_at:
+            days_difference = (datetime.now().date() - confirmed_at.date()).days
+            return days_difference
+        return None
+
+    days_since_confirmation.short_description = 'Days Since Confirmation'
+
 class TransactionInline(admin.TabularInline):
     model = Transaction
     extra = 0
     fields = ['action', 'amount', 'status', 'updated_at', 'created_at', 'transaction']
     readonly_fields = ('action','amount', 'status', 'transaction', 'updated_at', 'created_at')
+    can_delete = False
 
     def transaction(self, instance):
         if instance.pk:
@@ -46,7 +79,7 @@ class UserAdmin(admin.ModelAdmin):
     )
 
     list_display = ['email', 'referrer', 'asset_amount', 'credit', 'confirmed_at', 'days_since_confirmation']
-    inlines = [AssetInline, TransactionInline]
+    inlines = [AssetInline, TransactionInline, ReferredUsersInline]
 
     def asset_amount(self, obj):
         return obj.asset.amount if obj.asset else None

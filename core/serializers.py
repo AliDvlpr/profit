@@ -32,6 +32,16 @@ class UserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
         fields = '__all__'
 
+class ReferredUserSerializer(serializers.ModelSerializer):
+    confirmed = serializers.SerializerMethodField()
+    date_joined = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'date_joined', 'confirmed']
+
+    def get_confirmed(self, instance):
+        return instance.asset.confirmed_at is not None
+    
 class UserDashboardSerializer(BaseUserSerializer):
     user_email = serializers.CharField(source='email')  # Access email directly from CustomUser model
     amount = serializers.DecimalField(source='asset.amount', max_digits=12, decimal_places=6)
@@ -40,21 +50,22 @@ class UserDashboardSerializer(BaseUserSerializer):
     calculated_profit = serializers.SerializerMethodField(allow_null=True)
     user_credit = serializers.IntegerField(source='credit')
     referral_token = serializers.CharField()
-    referred_users_count = serializers.SerializerMethodField()  
-    referred__active_users_count = serializers.SerializerMethodField()
+    referrals_count = serializers.SerializerMethodField()  
+    active_referrals_count = serializers.SerializerMethodField()
+    referrals = serializers.SerializerMethodField()
 
-    def get_referred_users_count(self, instance):
-        referred_users_count = CustomUser.objects.filter(referrer=instance.id).count()
-        return referred_users_count
+    def get_referrals_count(self, instance):
+        referrals_count = CustomUser.objects.filter(referrer=instance.id).count()
+        return referrals_count
     
-    def get_referred__active_users_count(self, instance):
-        referred_users = CustomUser.objects.filter(referrer=instance.id)
-        filtered_referred_users = referred_users.filter(
+    def get_active_referrals_count(self, instance):
+        referrals = CustomUser.objects.filter(referrer=instance.id)
+        filtered_referrals = referrals.filter(
             asset__confirmed_at__isnull=False,
             asset__level__isnull=False
         )
-        referred_users_count = filtered_referred_users.count()
-        return referred_users_count
+        referrals_count = filtered_referrals.count()
+        return referrals_count
 
     def get_calculated_profit(self, instance):
         asset = instance.asset
@@ -70,6 +81,11 @@ class UserDashboardSerializer(BaseUserSerializer):
         calculated_profit = Decimal(asset.amount) * Decimal(asset.level.profit_rate) * Decimal(time_difference_in_seconds)
         return calculated_profit
 
+    def get_referrals(self, instance):
+        referrals = CustomUser.objects.filter(referrer=instance)
+        serializer = ReferredUserSerializer(referrals, many=True)
+        return serializer.data
+    
     class Meta:
         model = CustomUser
-        fields = ['user_email', 'amount', 'level_name','profit_rate', 'calculated_profit', 'user_credit', 'referral_token', 'referred_users_count', 'referred__active_users_count']
+        fields = ['user_email', 'amount', 'level_name','profit_rate', 'calculated_profit', 'user_credit', 'referral_token', 'referrals_count', 'active_referrals_count', 'referrals']
