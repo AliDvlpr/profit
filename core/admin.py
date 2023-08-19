@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms 
 from django.utils.html import format_html
 from django.urls import reverse
 from .models import CustomUser
@@ -63,8 +64,18 @@ class TransactionInline(admin.TabularInline):
 
         super().save_model(request, obj, form, change)
 
+class AssetInlineForm(forms.ModelForm):
+    class Meta:
+        model = Asset
+        fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['confirmed_at'].required = False
+
 class AssetInline(admin.StackedInline):
     model = Asset
+    form = AssetInlineForm
     fields = ('amount', 'level', 'confirmed_at')
     readonly_fields = ('amount', 'level')
     extra = 0
@@ -80,6 +91,7 @@ class UserAdmin(admin.ModelAdmin):
 
     list_display = ['email', 'referrer', 'asset_amount', 'credit', 'confirmed_at', 'days_since_confirmation']
     inlines = [AssetInline, TransactionInline, ReferredUsersInline]
+    search_fields = ['email']
 
     def asset_amount(self, obj):
         return obj.asset.amount if obj.asset else None

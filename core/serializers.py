@@ -52,7 +52,7 @@ class UserDashboardSerializer(BaseUserSerializer):
     referral_token = serializers.CharField()
     referrals_count = serializers.SerializerMethodField()  
     active_referrals_count = serializers.SerializerMethodField()
-    referrals = serializers.SerializerMethodField()
+    referrals = serializers.SerializerMethodField(allow_null=True)
 
     def get_referrals_count(self, instance):
         referrals_count = CustomUser.objects.filter(referrer=instance.id).count()
