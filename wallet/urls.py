@@ -9,6 +9,7 @@ router.register('asset', views.AssetViewSet, basename="asset")
 router.register('level', views.LevelViewSet, basename='level')
 router.register('transaction',views.TransactionViewSet, basename='transaction')
 router.register('dashboard', views.DashboardViewSet, basename='dashboard')
+router.register('chat', views.ChatViewSet, basename='chat')
 router.register('settings', views.SettingViewSet, basename='settings')
 
 urlpatterns = router.urls

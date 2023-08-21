@@ -1,6 +1,6 @@
 from djoser.serializers import UserSerializer as BaseUserSerializer, UserCreateSerializer as BaseUserCreateSerializer
 from rest_framework import serializers
-from .models import CustomUser
+from .models import *
 from wallet.models import *
 from wallet.serilaizers import *
 from django.utils import timezone
@@ -26,6 +26,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
         user = CustomUser.objects.create_user(**validated_data, referrer=referrer)
 
         Asset.objects.create(user=user)
+        Chat.objects.create(user=user)
 
         return user
     
@@ -144,3 +145,18 @@ class UserDashboardSerializer(BaseUserSerializer):
                   'profit_rate', 'calculated_profit', 'user_credit', 
                   'referral_token', 'referrals_count', 'active_referrals_count', 
                   'total_profit', 'total_referral_profit', 'referrals']
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    user_email = serializers.SerializerMethodField()
+    timestamp = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
+    def get_user_email(self, instance):
+        return instance.user.email
+    
+    class Meta:
+        model = ChatMessage
+        fields = ['content', 'timestamp', 'user_email']
+
+class CreateMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ['content', 'chat', 'user']

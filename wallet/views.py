@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 # from django_filters.rest_framework import DjangoFilterBackend
 # from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework import status
 from .permissions import *
 from .models import *
 from .serilaizers import *
@@ -72,6 +73,28 @@ class DashboardViewSet(ListModelMixin, GenericViewSet):
         user = self.request.user
         return CustomUser.objects.filter(pk=user.pk)
     
+class ChatViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated] 
+    serializer_class = ChatMessageSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        chat, created = Chat.objects.get_or_create(user=user)
+        return ChatMessage.objects.filter(chat=chat)
+
+    def create(self, request, *args, **kwargs):
+        user = self.request.user
+        chat = Chat.objects.get(pk=user.pk)
+        serializer = ChatMessageSerializer(data={
+            'content': request.data['content'],
+            'chat': chat.pk,
+            'user': user.pk
+        })
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class SettingViewSet(ListModelMixin, GenericViewSet):
     queryset = Setting.objects.all()
     serializer_class = SettingSerializer

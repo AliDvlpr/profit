@@ -63,3 +63,22 @@ class CustomUser(AbstractUser):
                     self.referral_token = referral_token
                     break
         super().save(*args, **kwargs)
+
+class Chat(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    STATUS_PENDING = 'P'
+    STATUS_ANSWERED = 'A'
+    STATUS_NOTHING = 'N'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_ANSWERED, 'Answered'),
+        (STATUS_NOTHING, 'Nothing')
+    ]
+    status = models.CharField(
+        max_length=1, choices=STATUS_CHOICES, default=STATUS_NOTHING)
+
+class ChatMessage(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True) 

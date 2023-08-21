@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms 
 from django.utils.html import format_html
 from django.urls import reverse
-from .models import CustomUser
+from .models import *
 from wallet.models import *
 from wallet.services import process_confirmed_transaction
 from datetime import datetime, timedelta
@@ -111,3 +111,28 @@ class UserAdmin(admin.ModelAdmin):
         return None
 
     days_since_confirmation.short_description = 'Days Since Confirmation'
+
+class ChatMessageInlineForm(forms.ModelForm):
+    class Meta:
+        model = ChatMessage
+        fields = ('content', 'user')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            for field_name in self.fields:
+                self.fields[field_name].widget.attrs['readonly'] = True
+
+class ChatMessageInline(admin.TabularInline):  # You can also use StackedInline here
+    model = ChatMessage
+    extra = 1
+    fields = ('content', 'user')
+    form = ChatMessageInlineForm
+
+    def has_delete_permission(self, request, obj=None):
+        return False 
+    
+@admin.register(Chat)
+class ChatAdmin(admin.ModelAdmin):
+    list_display = ['user', 'status']
+    inlines = [ChatMessageInline]
