@@ -12,31 +12,49 @@ def process_confirmed_transaction(transaction):
             asset.confirmed_at = timezone.now()
             asset.save()
 
-        confirmed_at = timezone.now()
+        now = timezone.now()
 
-        time_difference = confirmed_at - asset.confirmed_at
+        time_difference = now - asset.confirmed_at
 
         if asset.level:
             calculated_profit = Decimal(asset.amount) * Decimal(asset.level.profit_rate) * Decimal(time_difference.days)
+            calculated_referral_profit = Decimal(asset.amount) * Decimal(asset.level.referral_profit_rate) * Decimal(time_difference.days)
 
             user = asset.user
             user.credit += calculated_profit
             user.save()
 
+            if user.referrer:
+                referrer = user.referrer
+                referrer.credit += calculated_referral_profit
+                referrer.save()
+
+                # Create a transaction for the referrer's referral profit
+                if calculated_referral_profit > 0:
+                    referral_transaction = Transaction.objects.create(
+                        action=Transaction.ACTION_PROFIT,
+                        amount=calculated_referral_profit,
+                        status=Transaction.STATUS_CONFIRMED,
+                        created_at=timezone.now(),
+                        updated_at=timezone.now(),
+                        asset=referrer.asset,
+                        user=user
+                    )
+
             asset.amount += transaction.amount
             asset.confirmed_at = timezone.now()
             asset.save()
 
-            # Create a profit transaction
-            profit_transaction = Transaction.objects.create(
-                action=Transaction.ACTION_PROFIT,
-                amount=calculated_profit,
-                status=Transaction.STATUS_CONFIRMED,
-                created_at=timezone.now(),
-                updated_at=timezone.now(),
-                asset=asset,
-                user=user
-            )
+            if calculated_profit > 0:
+                profit_transaction = Transaction.objects.create(
+                    action=Transaction.ACTION_PROFIT,
+                    amount=calculated_profit,
+                    status=Transaction.STATUS_CONFIRMED,
+                    created_at=timezone.now(),
+                    updated_at=timezone.now(),
+                    asset=asset,
+                    user=user
+                )
         else:
             asset.amount += transaction.amount
             asset.confirmed_at = timezone.now()
@@ -50,17 +68,35 @@ def process_confirmed_transaction(transaction):
             asset.save()
 
         now = timezone.now()
-        time_difference = now - confirmed_at
+        time_difference = now - asset.confirmed_at
 
         if time_difference.days < 30:
             asset.amount -= transaction.amount
         else:
 
             calculated_profit = Decimal(asset.amount) * Decimal(asset.level.profit_rate) * Decimal(time_difference.days)
+            calculated_referral_profit = Decimal(asset.amount) * Decimal(asset.level.referral_profit_rate) * Decimal(time_difference.days)
 
             user = asset.user
             user.credit += calculated_profit
             user.save()
+
+            if user.referrer:
+                referrer = user.referrer
+                referrer.credit += calculated_referral_profit
+                referrer.save()
+
+                # Create a transaction for the referrer's referral profit
+                if calculated_referral_profit > 0:
+                    referral_transaction = Transaction.objects.create(
+                        action=Transaction.ACTION_PROFIT,
+                        amount=calculated_referral_profit,
+                        status=Transaction.STATUS_CONFIRMED,
+                        created_at=timezone.now(),
+                        updated_at=timezone.now(),
+                        asset=referrer.asset,
+                        user=user
+                    )
 
             asset.amount -= transaction.amount
 

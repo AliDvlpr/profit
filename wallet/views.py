@@ -3,10 +3,13 @@ from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, RetrieveM
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+# from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework.filters import SearchFilter, OrderingFilter
 from .permissions import *
 from .models import *
 from .serilaizers import *
 from core.models import *
+from .filters import *
 from core.serializers import *
 
 # Create your views here.
@@ -36,6 +39,8 @@ class LevelViewSet(ModelViewSet):
     
 class TransactionViewSet(ModelViewSet):
     queryset = Transaction.objects.all()
+    # filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    # filterset_class = TransactionFilter
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update']:
@@ -51,8 +56,8 @@ class TransactionViewSet(ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-
-        return Transaction.objects.filter(user=user)
+        asset = Asset.objects.get(user=user)
+        return Transaction.objects.filter(asset=asset)
     
     def perform_create(self, serializer):
         user = self.request.user

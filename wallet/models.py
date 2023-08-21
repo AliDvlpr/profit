@@ -14,6 +14,7 @@ class Asset(models.Model):
 class Level(models.Model):
     name = models.CharField("Level Name", max_length=128)
     profit_rate = models.DecimalField(max_digits=12, decimal_places=6, default=0)
+    referral_profit_rate = models.DecimalField(max_digits=12, decimal_places=6, default=0)
     min_referral = models.IntegerField(default=0)
     min_deposit = models.DecimalField(max_digits=12, decimal_places=6, default=0)
 

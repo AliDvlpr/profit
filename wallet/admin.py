@@ -14,7 +14,11 @@ class AssetAdmin(admin.ModelAdmin):
     list_display = ['user','amount', 'level', 'confirmed_at']
     list_select_related = ['user', 'level']
     inlines = [TransactionInline]
-    search_fields = ['user']
+    
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+        queryset |= self.model.objects.filter(user__icontains=search_term)
+        return queryset, use_distinct
 
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):

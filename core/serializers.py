@@ -1,10 +1,12 @@
 from djoser.serializers import UserSerializer as BaseUserSerializer, UserCreateSerializer as BaseUserCreateSerializer
 from rest_framework import serializers
 from .models import CustomUser
-from wallet.models import Asset
-from wallet.serilaizers import AssetSerializer
+from wallet.models import *
+from wallet.serilaizers import *
 from django.utils import timezone
 from decimal import Decimal
+from django.db.models import Sum
+
 
 class UserCreateSerializer(BaseUserCreateSerializer):
     referral_token = serializers.CharField(write_only=True) 
@@ -34,14 +36,37 @@ class UserSerializer(BaseUserSerializer):
 
 class ReferredUserSerializer(serializers.ModelSerializer):
     confirmed = serializers.SerializerMethodField()
+    referral_profit_rate = serializers.SerializerMethodField()
+    calculated_referral_profit = serializers.SerializerMethodField()
     date_joined = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
     class Meta:
         model = CustomUser
-        fields = ['email', 'date_joined', 'confirmed']
+        fields = ['email', 'date_joined', 'referral_profit_rate', 'calculated_referral_profit', 'confirmed']
 
     def get_confirmed(self, instance):
         return instance.asset.confirmed_at is not None
     
+    def get_referral_profit_rate(self, instance):
+        asset = instance.asset
+        if asset.level is not None:
+            return asset.level.referral_profit_rate
+        else:
+            return 0
+        
+    def get_calculated_referral_profit(self, instance):
+        asset = instance.asset
+        referral_profit_rate = self.get_referral_profit_rate(instance)
+        
+        if asset.confirmed_at is not None and referral_profit_rate > 0:
+            now = timezone.now()
+            time_difference = now - asset.confirmed_at
+
+            calculated_referral_profit = Decimal(referral_profit_rate) * Decimal(time_difference.days)
+            return calculated_referral_profit
+        
+        return 0
+        
+
 class UserDashboardSerializer(BaseUserSerializer):
     user_email = serializers.CharField(source='email')  # Access email directly from CustomUser model
     amount = serializers.DecimalField(source='asset.amount', max_digits=12, decimal_places=6)
@@ -53,6 +78,8 @@ class UserDashboardSerializer(BaseUserSerializer):
     referrals_count = serializers.SerializerMethodField()  
     active_referrals_count = serializers.SerializerMethodField()
     referrals = serializers.SerializerMethodField(allow_null=True)
+    total_profit = serializers.SerializerMethodField()
+    total_referral_profit = serializers.SerializerMethodField()
 
     def get_referrals_count(self, instance):
         referrals_count = CustomUser.objects.filter(referrer=instance.id).count()
@@ -86,6 +113,34 @@ class UserDashboardSerializer(BaseUserSerializer):
         serializer = ReferredUserSerializer(referrals, many=True)
         return serializer.data
     
+    def get_total_profit(self, instance):
+        user = instance
+        asset = user.asset
+
+        # Calculate total profit from transactions with action=profit and asset=user's asset
+        total_profit = Transaction.objects.filter(
+            action=Transaction.ACTION_PROFIT,
+            asset=asset,
+            user=user
+        ).aggregate(total_profit=Sum('amount'))['total_profit']
+
+        return total_profit or 0
+    
+    def get_total_referral_profit(self, instance):
+        user = instance
+        asset = user.asset
+
+        # Calculate total referral profit from transactions with action=profit, asset=user's asset, and user is not the current user
+        total_referral_profit = Transaction.objects.filter(
+            action=Transaction.ACTION_PROFIT,
+            asset=asset
+        ).exclude(user=user).aggregate(total_referral_profit=Sum('amount'))['total_referral_profit']
+
+        return total_referral_profit or 0 
+    
     class Meta:
         model = CustomUser
-        fields = ['user_email', 'amount', 'level_name','profit_rate', 'calculated_profit', 'user_credit', 'referral_token', 'referrals_count', 'active_referrals_count', 'referrals']
+        fields = ['user_email', 'amount', 'level_name',
+                  'profit_rate', 'calculated_profit', 'user_credit', 
+                  'referral_token', 'referrals_count', 'active_referrals_count', 
+                  'total_profit', 'total_referral_profit', 'referrals']
