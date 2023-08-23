@@ -24,4 +24,5 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
     path('', include('wallet.urls')),
+    path('chatmessage/add/<int:chat_id>/', add_chat_message, name='add_chat_message'),
 ]

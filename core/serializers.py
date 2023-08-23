@@ -149,12 +149,13 @@ class UserDashboardSerializer(BaseUserSerializer):
 class ChatMessageSerializer(serializers.ModelSerializer):
     user_email = serializers.SerializerMethodField()
     timestamp = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
+
     def get_user_email(self, instance):
         return instance.user.email
     
     class Meta:
         model = ChatMessage
-        fields = ['content', 'timestamp', 'user_email']
+        fields = ['content','timestamp', 'user_email']
 
 class CreateMessageSerializer(serializers.ModelSerializer):
     class Meta:

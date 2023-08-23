@@ -76,6 +76,9 @@ class Chat(models.Model):
     ]
     status = models.CharField(
         max_length=1, choices=STATUS_CHOICES, default=STATUS_NOTHING)
+    
+    def __str__(self):
+        return f"Chat with {self.user.email}"
 
 class ChatMessage(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)

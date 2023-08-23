@@ -84,8 +84,8 @@ class ChatViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         user = self.request.user
-        chat = Chat.objects.get(pk=user.pk)
-        serializer = ChatMessageSerializer(data={
+        chat, created = Chat.objects.get_or_create(user=user)
+        serializer = CreateMessageSerializer(data={
             'content': request.data['content'],
             'chat': chat.pk,
             'user': user.pk

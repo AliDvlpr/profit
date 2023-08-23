@@ -2,10 +2,12 @@ from django.contrib import admin
 from django import forms 
 from django.utils.html import format_html
 from django.urls import reverse
+from django.http import HttpResponse
+from django.urls import path
+from datetime import datetime, timedelta
 from .models import *
 from wallet.models import *
 from wallet.services import process_confirmed_transaction
-from datetime import datetime, timedelta
 
 class ReferredUsersInline(admin.TabularInline):
     model = CustomUser
@@ -83,7 +85,7 @@ class AssetInline(admin.StackedInline):
 @admin.register(CustomUser)
 class UserAdmin(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('email', 'password', 'is_active', 'credit')}),
+        (None, {'fields': ('email', 'password', 'is_active', 'credit','chat_link')}),
         ('referral info', {'fields':('referral_token','referrer')}),
         ('Personal info', {'fields': ('username', 'first_name', 'last_name')}),
         ('Make this user an admin', {'fields': ('is_staff',)})
@@ -112,22 +114,31 @@ class UserAdmin(admin.ModelAdmin):
 
     days_since_confirmation.short_description = 'Days Since Confirmation'
 
-class ChatMessageInlineForm(forms.ModelForm):
-    class Meta:
-        model = ChatMessage
-        fields = ('content', 'user')
+    readonly_fields = ('chat_link',)  # Mark the chat_link as read-only
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            for field_name in self.fields:
-                self.fields[field_name].widget.attrs['readonly'] = True
+    def chat_link(self, obj):
+        url = reverse('admin:core_chat_change', args=[obj.chat.id])
+        return format_html('<a href="{}">Open Chat</a>', url)
 
-class ChatMessageInline(admin.TabularInline):  # You can also use StackedInline here
+    chat_link.short_description = 'Chat'
+
+    actions = ['open_user_chat']
+
+    def open_user_chat(self, request, queryset):
+        for user in queryset:
+            if user.chat:
+                chat_url = reverse('admin:core_chat_change', args=[user.chat.id])
+                self.message_user(request, f'Chat for user {user} opened at {chat_url}.')
+            else:
+                self.message_user(request, f'User {user} does not have a chat.')
+
+    open_user_chat.short_description = 'Open Chat for Selected Users'
+
+class ChatMessageInline(admin.TabularInline):
     model = ChatMessage
     extra = 1
     fields = ('content', 'user')
-    form = ChatMessageInlineForm
+    list_filter = ['status']
 
     def has_delete_permission(self, request, obj=None):
         return False 
@@ -136,3 +147,18 @@ class ChatMessageInline(admin.TabularInline):  # You can also use StackedInline 
 class ChatAdmin(admin.ModelAdmin):
     list_display = ['user', 'status']
     inlines = [ChatMessageInline]
+    actions = ['add_chat_message']
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_admin_chat'] = True
+
+        chat = Chat.objects.get(pk=object_id)
+        chat_messages = chat.chatmessage_set.all().order_by('timestamp')
+
+        extra_context['chat'] = chat
+        extra_context['chat_messages'] = chat_messages
+
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
+
+    change_form_template = 'admin_chat_page.html'
