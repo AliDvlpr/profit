@@ -20,6 +20,10 @@ def add_chat_message(request, chat_id):
             chat_message.user = request.user
             chat_message.chat_id = chat_id
             chat_message.save()
+
+            chat = Chat.objects.get(pk=chat_id)
+            chat.status = 'A'
+            chat.save()
     return redirect('admin:core_chat_change', chat_id)
 
 # class CustomUserViewSet(UserViewSet):
