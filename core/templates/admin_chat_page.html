@@ -22,20 +22,6 @@
         justify-content: space-between;
         flex-direction: column;
       }
-      .message-input {
-        flex: 0 1 40px;
-        width: 100%;
-        background: rgba(0, 0, 0, 0.3);
-        padding: 10px;
-        position: relative;
-      }
-      /* Style for the input field */
-      .message-input .form input {
-        width: 100%;
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-      }
       /*  */
       .colM h1 {
         display: none !important;
@@ -57,13 +43,18 @@
         font-weight: normal;
         font-size: 20px;
       }
+      /*  */
+      .message-input input {
+        border-radius: 10px;
+      }
       /* Style for the send button */
       .message-input button {
         padding: 5px 10px;
         background-color: #007bff;
         color: white;
         border: none;
-        border-radius: 3px;
+        border-radius: 10px;
+        margin: 5px;
         cursor: pointer;
       }
 
@@ -136,9 +127,9 @@
         {% endfor %}
     </div>
     <div class="message-input">
-      <form method="post" action="{% url 'add_chat_message' chat.id %}">
+      <form method="post" action="{% url 'add_chat_message' chat.id %}" style="width: 100%; position: relative; display: flex; flex-direction: row;">
         {% csrf_token %}
-        <input type="text" name="content" placeholder="Type your message" />
+        <input type="text" name="content" placeholder="Type your message" style="width: 100%; position: relative; display: flex; flex-direction: row;"/>
         <button type="submit">Send</button>
       </form>
     </div>
