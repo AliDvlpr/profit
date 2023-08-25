@@ -39,10 +39,12 @@ class ReferredUserSerializer(serializers.ModelSerializer):
     confirmed = serializers.SerializerMethodField()
     referral_profit_rate = serializers.SerializerMethodField()
     calculated_referral_profit = serializers.SerializerMethodField()
+    asset = serializers.SerializerMethodField()
+    level = serializers.SerializerMethodField()
     date_joined = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
     class Meta:
         model = CustomUser
-        fields = ['email', 'date_joined', 'referral_profit_rate', 'calculated_referral_profit', 'confirmed']
+        fields = ['email', 'date_joined', 'referral_profit_rate', 'calculated_referral_profit', 'asset', 'level', 'confirmed']
 
     def get_confirmed(self, instance):
         return instance.asset.confirmed_at is not None
@@ -66,6 +68,12 @@ class ReferredUserSerializer(serializers.ModelSerializer):
             return calculated_referral_profit
         
         return 0
+    
+    def get_asset(self, instance):
+        return instance.asset.amount if instance.asset else None
+
+    def get_level(self, instance):
+        return instance.asset.level.name if instance.asset and instance.asset.level else None
         
 
 class UserDashboardSerializer(BaseUserSerializer):

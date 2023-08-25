@@ -92,8 +92,6 @@ class ChatViewSet(ModelViewSet):
         })
         if serializer.is_valid():
             serializer.save()
-            
-            # Update chat status to 'P'
             chat.status = 'P'
             chat.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
