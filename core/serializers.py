@@ -9,7 +9,7 @@ from django.db.models import Sum
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
-    referral_token = serializers.CharField(write_only=True) 
+    referral_token = serializers.CharField(write_only=True, allow_null=True) 
     class Meta(BaseUserCreateSerializer.Meta):
         fields = ['id', 'email', 'password', 'referral_token']
 
