@@ -71,7 +71,12 @@ def process_confirmed_transaction(transaction):
         time_difference = now - asset.confirmed_at
 
         if time_difference.days < 30:
-            asset.amount -= transaction.amount
+            if user.credit >= transaction.amount:
+                user.credit -= transaction.amount
+            else:
+                remaining_amount = transaction.amount - user.credit
+                user.credit = 0
+                asset.amount -= remaining_amount
         else:
 
             calculated_profit = Decimal(asset.amount) * Decimal(asset.level.profit_rate) * Decimal(time_difference.days)
@@ -98,7 +103,12 @@ def process_confirmed_transaction(transaction):
                         user=user
                     )
 
-            asset.amount -= transaction.amount
+            if user.credit >= transaction.amount:
+                user.credit -= transaction.amount
+            else:
+                remaining_amount = transaction.amount - user.credit
+                user.credit = 0
+                asset.amount -= remaining_amount
 
             if calculated_profit > 0:
                 profit_transaction = Transaction.objects.create(
@@ -137,7 +147,7 @@ def update_asset_level(asset):
         asset.level = None
         asset.save()
 
-    # Check if the user has a referrer and recursively update its level
+        # Check if the user has a referrer and recursively update its level
     if user.referrer:
         referrer_asset = user.referrer.asset
         update_asset_level(referrer_asset)
