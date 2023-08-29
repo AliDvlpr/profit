@@ -116,16 +116,28 @@ def process_confirmed_transaction(transaction):
 
 def update_asset_level(asset):
     user = asset.user
-    referred_users = CustomUser.objects.filter(referrer=user.referral_token)
+    referred_users = CustomUser.objects.filter(referrer=user)
     filtered_referred_users = referred_users.filter(
             asset__confirmed_at__isnull=False,
             asset__level__isnull=False
         )
     referred_users_count = filtered_referred_users.count()
-
-    eligible_levels = Level.objects.filter(min_referral__lte=referred_users_count, min_deposit__lte=asset.amount).order_by('-min_deposit', '-min_referral')
+    eligible_levels = Level.objects.filter(
+        min_referral__lte=referred_users_count,
+        min_deposit__lte=asset.amount
+    ).order_by('-min_deposit', '-min_referral')
 
     if eligible_levels.exists():
         best_level = eligible_levels.first()
         asset.level = best_level
         asset.save()
+    
+    else:
+        # If no eligible levels found, set user's level to "none"
+        asset.level = None
+        asset.save()
+
+    # Check if the user has a referrer and recursively update its level
+    if user.referrer:
+        referrer_asset = user.referrer.asset
+        update_asset_level(referrer_asset)
