@@ -70,6 +70,8 @@ def process_confirmed_transaction(transaction):
         now = timezone.now()
         time_difference = now - asset.confirmed_at
 
+        user = asset.user
+
         if time_difference.days < 30:
             if user.credit >= transaction.amount:
                 user.credit -= transaction.amount
@@ -77,6 +79,7 @@ def process_confirmed_transaction(transaction):
                 remaining_amount = transaction.amount - user.credit
                 user.credit = 0
                 asset.amount -= remaining_amount
+
         else:
 
             calculated_profit = Decimal(asset.amount) * Decimal(asset.level.profit_rate) * Decimal(time_difference.days)
@@ -84,32 +87,38 @@ def process_confirmed_transaction(transaction):
 
             user = asset.user
             user.credit += calculated_profit
-            user.save()
 
             if user.referrer:
                 referrer = user.referrer
                 referrer.credit += calculated_referral_profit
                 referrer.save()
 
-                # Create a transaction for the referrer's referral profit
-                if calculated_referral_profit > 0:
-                    referral_transaction = Transaction.objects.create(
-                        action=Transaction.ACTION_PROFIT,
-                        amount=calculated_referral_profit,
-                        status=Transaction.STATUS_CONFIRMED,
-                        created_at=timezone.now(),
-                        updated_at=timezone.now(),
-                        asset=referrer.asset,
-                        user=user
-                    )
-
             if user.credit >= transaction.amount:
                 user.credit -= transaction.amount
+
             else:
                 remaining_amount = transaction.amount - user.credit
                 user.credit = 0
                 asset.amount -= remaining_amount
+                
+        # Check if asset amount is non-negative before saving
+        if asset.amount >= 0:
+            user.save()
+            asset.confirmed_at = now
+            asset.save()
 
+            # Create a transaction for the referrer's referral profit
+            if calculated_referral_profit > 0:
+                referral_transaction = Transaction.objects.create(
+                    action=Transaction.ACTION_PROFIT,
+                    amount=calculated_referral_profit,
+                    status=Transaction.STATUS_CONFIRMED,
+                    created_at=timezone.now(),
+                    updated_at=timezone.now(),
+                    asset=referrer.asset,
+                    user=user
+                    )
+                
             if calculated_profit > 0:
                 profit_transaction = Transaction.objects.create(
                     action=Transaction.ACTION_PROFIT,
@@ -120,9 +129,11 @@ def process_confirmed_transaction(transaction):
                     asset=asset,
                     user=user
                 )
-
-        asset.confirmed_at = now
-        asset.save()
+                
+        else:
+            # Reject the transaction and set the status
+            transaction.status = Transaction.STATUS_REJECTED
+            transaction.save()
 
 def update_asset_level(asset):
     user = asset.user
