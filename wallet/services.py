@@ -81,26 +81,34 @@ def process_confirmed_transaction(transaction):
                 asset.amount -= remaining_amount
 
         else:
+            if asset.level:
+                calculated_profit = Decimal(asset.amount) * Decimal(asset.level.profit_rate) * Decimal(time_difference.days)
+                calculated_referral_profit = Decimal(asset.amount) * Decimal(asset.level.referral_profit_rate) * Decimal(time_difference.days)
 
-            calculated_profit = Decimal(asset.amount) * Decimal(asset.level.profit_rate) * Decimal(time_difference.days)
-            calculated_referral_profit = Decimal(asset.amount) * Decimal(asset.level.referral_profit_rate) * Decimal(time_difference.days)
+                user = asset.user
+                user.credit += calculated_profit
 
-            user = asset.user
-            user.credit += calculated_profit
+                if user.referrer:
+                    referrer = user.referrer
+                    referrer.credit += calculated_referral_profit
+                    referrer.save()
 
-            if user.referrer:
-                referrer = user.referrer
-                referrer.credit += calculated_referral_profit
-                referrer.save()
+                if user.credit >= transaction.amount:
+                    user.credit -= transaction.amount
 
-            if user.credit >= transaction.amount:
-                user.credit -= transaction.amount
+                else:
+                    remaining_amount = transaction.amount - user.credit
+                    user.credit = 0
+                    asset.amount -= remaining_amount
 
             else:
-                remaining_amount = transaction.amount - user.credit
-                user.credit = 0
-                asset.amount -= remaining_amount
-                
+                if user.credit >= transaction.amount:
+                    user.credit -= transaction.amount
+
+                else:
+                    remaining_amount = transaction.amount - user.credit
+                    user.credit = 0
+                    asset.amount -= remaining_amount 
         # Check if asset amount is non-negative before saving
         if asset.amount >= 0:
             user.save()
