@@ -1,4 +1,3 @@
-from django.contrib.admin import SimpleListFilter
 from django.contrib import admin
 from .models import *
 from .services import *
@@ -29,8 +28,7 @@ class LevelAdmin(admin.ModelAdmin):
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ['asset', 'action', 'amount', 'status', 'updated_at', 'created_at']
     list_editable = ['status']
-    list_filter = ['action','status']
-
+    
     def save_model(self, request, obj, form, change):
         original_obj = self.model.objects.get(pk=obj.pk)
 
@@ -42,7 +40,19 @@ class TransactionAdmin(admin.ModelAdmin):
 
         super().save_model(request, obj, form, change)
 
+    list_filter = (
+        ('action', admin.ChoicesFieldListFilter),
+        'status',
+    )
+
+    search_fields = ['asset__user__email']
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['title'] = 'Transactions'
+        return super().changelist_view(request, extra_context=extra_context)
 
 @admin.register(Setting)
 class SettingAdmin(admin.ModelAdmin):
     list_display = ['wallet_address']
+

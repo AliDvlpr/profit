@@ -148,6 +148,7 @@ class ChatAdmin(admin.ModelAdmin):
     list_display = ['user', 'status']
     inlines = [ChatMessageInline]
     actions = ['add_chat_message']
+    list_filter = ["status"]
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}

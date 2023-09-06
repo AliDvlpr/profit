@@ -1,0 +1,34 @@
+{% extends "admin/base.html" %}
+{% load i18n custom_admin_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  {% block title %}{% trans 'Django administration' %}{% endblock %}
+
+{% block branding %}
+  <div id="content-main" style="display: flex; flex-direction: row;">
+    <a href="{% url 'admin:core_chat_changelist' %}?status__exact=P">
+      <div class="pending-messages" style="padding: 10px; background-color: rgba(89, 215, 129, 0.712); border-radius: 30px; margin: 10px;">
+        Pending Messages: {% pending_messages_count %}
+      </div>
+    </a>
+    <a href="{% url 'admin:wallet_transaction_changelist' %}?action__exact=D&status__exact=P">
+      <div class="pending-deposits" style="padding: 10px; background-color: rgba(89, 215, 129, 0.712); border-radius: 30px; margin: 10px;">
+        Pending Deposits: {% pending_deposits_count %}
+      </div>
+    </a>
+    <a href="{% url 'admin:wallet_transaction_changelist' %}?action__exact=W&status__exact=P">
+      <div class="pending-withdraws" style="padding: 10px; background-color: rgba(89, 215, 129, 0.712); border-radius: 30px; margin: 10px;">
+        Pending Withdraws: {% pending_withdraws_count %}
+      </div>
+    </a>
+  </div>
+{% endblock %}
+
+</body>
+</html>

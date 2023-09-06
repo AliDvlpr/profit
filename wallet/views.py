@@ -59,11 +59,32 @@ class TransactionViewSet(ModelViewSet):
         user = self.request.user
         asset = Asset.objects.get(user=user)
         return Transaction.objects.filter(asset=asset)
-    
-    def perform_create(self, serializer):
+
+    def create(self, request, *args, **kwargs):
         user = self.request.user
         asset = Asset.objects.get(user=user)
+
+        # Validate action type
+        action = request.data.get('action')
+        if action == Transaction.ACTION_DEPOSIT:
+            transaction_id = request.data.get('transaction_id')
+            if not transaction_id:
+                return Response({'error': 'transaction id cannot be blank for deposit action.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif action == Transaction.ACTION_WITHDRAW:
+            wallet_address = request.data.get('wallet_address')
+            if not wallet_address:
+                return Response({'error': 'wallet address cannot be blank for withdraw action.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            amount = Decimal(request.data.get('amount', 0))
+            if amount > (Decimal(asset.amount) + Decimal(user.credit)):
+                return Response({'error': 'The requested withdrawal amount exceeds your available assets and credited profit.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         serializer.save(asset=asset, user=user, created_at=timezone.now())
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 class DashboardViewSet(ListModelMixin, GenericViewSet):
     permission_classes = [IsAuthenticated] 
