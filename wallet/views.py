@@ -65,19 +65,19 @@ class TransactionViewSet(ModelViewSet):
         asset = Asset.objects.get(user=user)
 
         # Validate action type
-        action = request.data.get('action')
-        if action == Transaction.ACTION_DEPOSIT:
-            transaction_id = request.data.get('transaction_id')
-            if not transaction_id:
-                return Response({'error': 'transaction id cannot be blank for deposit action.'}, status=status.HTTP_400_BAD_REQUEST)
-        elif action == Transaction.ACTION_WITHDRAW:
-            wallet_address = request.data.get('wallet_address')
-            if not wallet_address:
-                return Response({'error': 'wallet address cannot be blank for withdraw action.'}, status=status.HTTP_400_BAD_REQUEST)
+        # action = request.data.get('action')
+        # if action == Transaction.ACTION_DEPOSIT:
+        #     transaction_id = request.data.get('transaction_id')
+        #     if not transaction_id:
+        #         return Response({'error': 'transaction id cannot be blank for deposit action.'}, status=status.HTTP_400_BAD_REQUEST)
+        # elif action == Transaction.ACTION_WITHDRAW:
+        #     wallet_address = request.data.get('wallet_address')
+        #     if not wallet_address:
+        #         return Response({'error': 'wallet address cannot be blank for withdraw action.'}, status=status.HTTP_400_BAD_REQUEST)
             
-            amount = Decimal(request.data.get('amount', 0))
-            if amount > (Decimal(asset.amount) + Decimal(user.credit)):
-                return Response({'error': 'The requested withdrawal amount exceeds your available assets and credited profit.'}, status=status.HTTP_400_BAD_REQUEST)
+        #     amount = Decimal(request.data.get('amount', 0))
+        #     if amount > (Decimal(asset.amount) + Decimal(user.credit)):
+        #         return Response({'error': 'The requested withdrawal amount exceeds your available assets and credited profit.'}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
