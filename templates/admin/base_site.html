@@ -11,23 +11,32 @@
   {% block title %}{% trans 'Django administration' %}{% endblock %}
 
 {% block branding %}
-  <div id="content-main" style="display: flex; flex-direction: row;">
-    <a href="{% url 'admin:core_chat_changelist' %}?status__exact=P">
-      <div class="pending-messages" style="padding: 10px; background-color: rgb(44, 153, 79); box-shadow: 0 0 5px gray; border-radius: 30px; margin: 10px;">
-        Pending Messages: {% pending_messages_count %}
-      </div>
-    </a>
-    <a href="{% url 'admin:wallet_transaction_changelist' %}?action__exact=D&status__exact=P">
-      <div class="pending-deposits" style="padding: 10px; background-color: rgb(44, 153, 79); box-shadow: 0 0 5px gray; border-radius: 30px; margin: 10px;">
-        Pending Deposits: {% pending_deposits_count %}
-      </div>
-    </a>
-    <a href="{% url 'admin:wallet_transaction_changelist' %}?action__exact=W&status__exact=P">
-      <div class="pending-withdraws" style="padding: 10px; background-color: rgb(44, 153, 79); box-shadow: 0 0 5px gray; border-radius: 30px; margin: 10px;">
-        Pending Withdraws: {% pending_withdraws_count %}
-      </div>
-    </a>
-  </div>
+  {% if request.path != '/admin/login/' %}
+    <div id="content-main" style="display: flex; flex-direction: row;">
+      <a href="{% url 'admin:core_chat_changelist' %}?status__exact=P">
+        <div class="pending-messages" style="padding: 10px; background-color: rgb(44, 153, 79); box-shadow: 0 0 5px gray; border-radius: 30px; margin: 10px;">
+          Pending Messages: {% pending_messages_count %}
+        </div>
+      </a>
+      <a href="{% url 'admin:wallet_transaction_changelist' %}?action__exact=D&status__exact=P">
+        <div class="pending-deposits" style="padding: 10px; background-color: rgb(44, 153, 79); box-shadow: 0 0 5px gray; border-radius: 30px; margin: 10px;">
+          Pending Deposits: {% pending_deposits_count %}
+        </div>
+      </a>
+      <a href="{% url 'admin:wallet_transaction_changelist' %}?action__exact=W&status__exact=P">
+        <div class="pending-withdraws" style="padding: 10px; background-color: rgb(44, 153, 79); box-shadow: 0 0 5px gray; border-radius: 30px; margin: 10px;">
+          Pending Withdraws: {% pending_withdraws_count %}
+        </div>
+      </a>
+    </div>
+  {% endif %}
+  {% if request.path == '/admin/login/' %}
+    <div id="content-main" style="display: flex; flex-direction: row;">
+      <h1>
+        Diamond Stake Admin
+      </h1>
+    </div>
+  {% endif %}
 {% endblock %}
 
 </body>
