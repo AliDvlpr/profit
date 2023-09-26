@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from .models import *
 from wallet.models import *
 from wallet.services import process_confirmed_transaction
+from django.db.models import Max
 
 class ReferredUsersInline(admin.TabularInline):
     model = CustomUser
@@ -145,10 +146,9 @@ class ChatMessageInline(admin.TabularInline):
     
 @admin.register(Chat)
 class ChatAdmin(admin.ModelAdmin):
-    list_display = ['user', 'status']
+    list_display = ['user', 'status', 'last_message']
     inlines = [ChatMessageInline]
     actions = ['add_chat_message']
-    list_filter = ["status"]
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -161,5 +161,18 @@ class ChatAdmin(admin.ModelAdmin):
         extra_context['chat_messages'] = chat_messages
 
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
+    
+    def last_message(self, obj):
+        last_message = obj.chatmessage_set.aggregate(last_message_timestamp=Max('timestamp'))
+        return last_message['last_message_timestamp']
 
+    last_message.admin_order_field = 'last_message'
+    
+    def get_queryset(self, request):
+        # Override the default queryset to order by last_message_timestamp in descending order
+        # and exclude chats with status set to 'Nothing' ('N').
+        return super().get_queryset(request).annotate(
+            last_message_timestamp=Max('chatmessage__timestamp')
+        ).exclude(status=Chat.STATUS_NOTHING).order_by('-last_message_timestamp')
+    
     change_form_template = 'admin_chat_page.html'
